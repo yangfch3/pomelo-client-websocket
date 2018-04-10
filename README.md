@@ -4,7 +4,7 @@
 ## Features
 1. 可以同时在浏览器或 Node 环境中使用
 2. 支持创建多个 Pomelo 客户端实例
-3. 客户端实例新增 `__CLIENT_ROUTE` 事件用于对所有服务器端推送消息进行统一处理
+3. 客户端实例新增 `__CLIENT_ROUTE` `__CLIENT_RESPONSE` 事件用于对所有服务器端推送、响应消息进行统一处理；新增连接成功 `connect` 事件
 4. `wss` 协议支持
 
 ## Usage

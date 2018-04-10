@@ -1442,6 +1442,7 @@ var root = this;
 
                 var obj = Package.encode(Package.TYPE_HANDSHAKE_ACK);
                 this.send(obj);
+                this.emit('connect');
                 if (this.initCallback) {
                     this.initCallback(this.socket);
                     this.initCallback = null;
@@ -1489,6 +1490,7 @@ var root = this;
                     return;
                 }
 
+                this.emit('__CLIENT_RESPONSE', msg.body);
                 cb(msg.body);
             };
 
