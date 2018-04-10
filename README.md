@@ -56,7 +56,7 @@ pomelo.on('__CLIENT_ROUTE', (route, data) => {
 ### Browser
 
 如果您使用 `webpack` 等打包工具，并且打包后的代码是在浏览器环境下运行，则使用下面的方法引入：
-```
+```javascript
 const Pomelo = require('pomelo-client-websocket/core');
 const pomelo = new Pomelo();
 
