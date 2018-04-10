@@ -1,0 +1,28 @@
+{
+  "name": "pomelo-client-websocket",
+  "version": "1.0.0",
+  "description": "multi-client supported pomelo-client-websocket",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yangfch3/pomelo-client-websocket.git"
+  },
+  "keywords": [
+    "pomelo",
+    "pomelo-client",
+    "pomelo-client-websocket",
+    "multi-client"
+  ],
+  "author": "yangfch3",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yangfch3/pomelo-client-websocket/issues"
+  },
+  "homepage": "https://github.com/yangfch3/pomelo-client-websocket#readme",
+  "dependencies": {
+    "ws": "^5.1.1"
+  }
+}
