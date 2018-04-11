@@ -1275,6 +1275,15 @@ var root = this;
                 return this;
             };
 
+            pro.initByUrl = function (url, params, cb) {
+                this.initCallback = cb;
+
+                this.handshakeBuffer.user = params.user;
+                this.handshakeCallback = params.handshakeCallback;
+                this.initWebSocket(url, cb);
+                return this;
+            };
+
             var onopen = function (event) {
                 var obj = Package.encode(Package.TYPE_HANDSHAKE, Protocol.strencode(JSON.stringify(this.handshakeBuffer)));
                 this.send(obj);

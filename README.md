@@ -6,6 +6,7 @@
 2. 支持创建多个 Pomelo 客户端实例
 3. 客户端实例新增 `__CLIENT_ROUTE` `__CLIENT_RESPONSE` 事件用于对所有服务器端推送、响应消息进行统一处理；新增连接成功 `connect` 事件
 4. `wss` 协议支持
+5. 实例新增 `initByUrl(url, params, cb)` 方法
 
 ## Usage
 在浏览器和 Node 环境下运行时对本库的使用存在细微的差别。
