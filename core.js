@@ -274,6 +274,27 @@ var root = this;
             Message.TYPE_RESPONSE = 2;
             Message.TYPE_PUSH = 3;
 
+            function UTF8Length(input) {
+                var output = 0;
+                for (var i = 0; i < input.length; i++) {
+                  var charCode = input.charCodeAt(i);
+                  if (charCode > 0x7FF) {
+                    // Surrogate pair means its a 4 byte character
+                    // https://unicode.org/charts/PDF/UD800.pdf
+                    if (0xD800 <= charCode && charCode <= 0xDBFF) { // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+                      i++;
+                      output++;
+                    }
+                    output += 3; // 1110xxxx 10xxxxxx 10xxxxxx
+                  } else if (charCode > 0x7F) { // 110xxxxx 10xxxxxx
+                    output += 2;
+                  } else {
+                    output++; // 0xxxxxxx
+                  }
+                }
+                return output;
+            }
+            
             /**
              * pomele client encode
              * id message id;
@@ -282,60 +303,89 @@ var root = this;
              * socketio current support string
              */
             Protocol.strencode = function (str) {
-                var byteArray = new ByteArray(str.length * 3);
-                var offset = 0;
-                for (var i = 0; i < str.length; i++) {
+                if (typeof Buffer !== "undefined" && ByteArray === Buffer) {
+                  // encoding defaults to 'utf8'
+                  return (new Buffer(str));
+                } else {
+                  var byteArray = new ByteArray(UTF8Length(str))
+                  var offset = 0
+                  for (var i = 0; i < str.length; i++) {
                     var charCode = str.charCodeAt(i);
                     var codes = null;
                     if (charCode <= 0x7f) {
-                        codes = [charCode];
+                      codes = [charCode];
                     } else if (charCode <= 0x7ff) {
-                        codes = [0xc0 | (charCode >> 6), 0x80 | (charCode & 0x3f)];
-                    } else {
+                      codes = [0xc0 | (charCode >> 6), 0x80 | (charCode & 0x3f)];
+                    } else if (charCode <= 0xffff) {
+                      if (0xD800 <= charCode && charCode <= 0xDBFF) {
+                        var lowCharCode = str.charCodeAt(++i) // 低位代理
+                        if (isNaN(lowCharCode)) {
+                          throw new Error('低位代理为空，非法数据');
+                        }
+                        charCode = ((charCode - 0xD800)<<10) + (lowCharCode - 0xDC00) + 0x10000;
+                        codes = [0xf0 | (charCode >> 18), 0x80 | ((charCode & 0x3f000) >> 12), 0x80 | ((charCode & 0xfc0) >> 6), 0x80 | (charCode & 0x3f)];
+                      } else {
                         codes = [0xe0 | (charCode >> 12), 0x80 | ((charCode & 0xfc0) >> 6), 0x80 | (charCode & 0x3f)];
+                      }
                     }
                     for (var j = 0; j < codes.length; j++) {
-                        byteArray[offset] = codes[j];
-                        ++offset;
+                      byteArray[offset] = codes[j];
+                      ++offset;
                     }
+                  }
+                  var _buffer = new ByteArray(offset);
+                  copyArray(_buffer, 0, byteArray, 0, offset);
+                  return _buffer;
                 }
-                var _buffer = new ByteArray(offset);
-                copyArray(_buffer, 0, byteArray, 0, offset);
-                return _buffer;
             };
-
+            
             /**
              * client decode
              * msg String data
              * return Message Object
              */
             Protocol.strdecode = function (buffer) {
-                var bytes = new ByteArray(buffer);
-                var array = [];
-                var offset = 0;
-                var charCode = 0;
-                var end = bytes.length;
-                while (offset < end) {
-                    if (bytes[offset] < 128) {
-                        charCode = bytes[offset];
-                        offset += 1;
-                    } else if (bytes[offset] < 224) {
-                        charCode = ((bytes[offset] & 0x3f) << 6) + (bytes[offset + 1] & 0x3f);
-                        offset += 2;
+                if (typeof Buffer !== "undefined" && ByteArray === Buffer) {
+                  // encoding defaults to 'utf8'
+                  return buffer.toString();
+                } else {
+                  var bytes = new ByteArray(buffer);
+                  var output = '';
+                  var offset = 0;
+                  var charCode = 0;
+                  var end = bytes.length;
+                  while (offset < end) {
+                    if (bytes[offset] < 128) { // 0x80
+                      charCode = bytes[offset];
+                      offset += 1;
+                    } else if (bytes[offset] < 224) { // 0xe0
+                      if (bytes[offset + 1] < 0) {
+                        throw new Error('非法数据')
+                      }
+                      charCode = ((bytes[offset] & 0x1f) << 6) + (bytes[offset + 1] & 0x3f);
+                      offset += 2;
                     } else {
+                      if (bytes[offset + 2] < 0) {
+                        throw new Error('非法数据')
+                      }
+                      if (bytes[offset] < 240) { // 0xf0
                         charCode = ((bytes[offset] & 0x0f) << 12) + ((bytes[offset + 1] & 0x3f) << 6) + (bytes[offset + 2] & 0x3f);
                         offset += 3;
+                      } else {
+                        charCode = ((bytes[offset] & 0x07) << 18) + ((bytes[offset + 1] & 0x3f) << 12) + ((bytes[offset + 2] & 0x3f) << 6) + (bytes[offset + 3] & 0x3f);
+                        offset += 4;
+                      }
                     }
-                    array.push(charCode);
+                    if (charCode > 0xFFFF) {
+                      charCode -= 0x10000;
+                      output += String.fromCharCode(0xD800 + (charCode >> 10)); // 高位
+                      
+                      charCode = 0xDC00 + (charCode & 0x3FF); // 低位
+                    }
+                    output += String.fromCharCode(charCode);
+                  }
+                  return output;
                 }
-                var res = '';
-                var chunk = 8 * 1024;
-                var i;
-                for (i = 0; i < array.length / chunk; i++) {
-                    res += String.fromCharCode.apply(null, array.slice(i * chunk, (i + 1) * chunk));
-                }
-                res += String.fromCharCode.apply(null, array.slice(i * chunk));
-                return res;
             };
 
             /**
