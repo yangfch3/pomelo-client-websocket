@@ -8,6 +8,7 @@
 4. `wss` 协议支持
 5. 实例新增 `initByUrl(url, params, cb)` 方法
 6. 兼容 `\uffff` 以上字符
+7. 支持重连（>= 1.0.5）
 
 ## Usage
 在浏览器和 Node 环境下运行时对本库的使用存在细微的差别。
@@ -23,7 +24,14 @@ const pomelo = new Pomelo();
 pomelo.init({
     host: '192.168.1.20',
     port: 3010,
-    scheme: 'ws'
+    scheme: 'ws',
+
+    log: true, // 开启日志输出
+
+    // 重连相关配置
+    // reconnect: true,
+    // reconnectDelay: 3000,
+    // maxReconnectAttempts: 3
 }, () => {
     pomelo.request('gate.gateHandler.queryEntry', {
         uid: 234234232
