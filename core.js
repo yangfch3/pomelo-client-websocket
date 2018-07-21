@@ -1358,6 +1358,8 @@ var root = this;
       pro.initByUrl = function (url, params, cb) {
         this.initCallback = cb
 
+        this.log = !!params.log
+
         this.reconnect = !!params.reconnect
         if (params.maxReconnectAttempts > 0) {
           this.maxReconnectAttempts = +params.maxReconnectAttempts
