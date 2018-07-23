@@ -1263,6 +1263,7 @@ var root = this;
       var JS_WS_CLIENT_VERSION = '0.0.1';
 
       var Protocol = localRoot.Protocol;
+      var protobuf = localRoot.protobuf;
       var Package = Protocol.Package;
       var Message = Protocol.Message;
       var EventEmitter = localRoot.EventEmitter;
@@ -1488,7 +1489,7 @@ var root = this;
 
         //compress message by protobuf
         var protos = !!this.data.protos ? this.data.protos.client : {};
-        if (!!protos[route]) {
+        if (!!protos[route] && protobuf) {
           msg = protobuf.encode(route, msg);
         } else {
           msg = Protocol.strencode(JSON.stringify(msg));
