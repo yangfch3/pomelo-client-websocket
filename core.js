@@ -1363,7 +1363,7 @@ pomeloClient_require.register('pomelonode-pomelo-jsclient-websocket/lib/pomelo-c
       var obj = Package.encode(Package.TYPE_HANDSHAKE, Protocol.strencode(JSON.stringify(this.handshakeBuffer)))
       this.send(obj)
     }
-    var decoder = this.log && (function () {
+    var decoder = (function () {
       try {
         return new TextDecoder('utf-8') // eslint-disable-line
       } catch (e) {
@@ -1372,8 +1372,8 @@ pomeloClient_require.register('pomelonode-pomelo-jsclient-websocket/lib/pomelo-c
     })()
     var onmessage = function (cb, event) {
       // M+
-      var txt = decoder && decoder.decode(event.data).substr(4)
-      txt && this.log && console[txt.indexOf('"code":500') >= 0 ? 'error' : 'log']('%c收到消息', 'color: #DFC149;border: 1px solid #ccc', txt) // 排除心跳包
+      var txt = this.log && decoder && decoder.decode(event.data).substr(4)
+      this.log && txt && console[txt.indexOf('"code":500') >= 0 ? 'error' : 'log']('%c收到消息', 'color: #DFC149;border: 1px solid #ccc', txt) // 排除心跳包
 
       this.processPackage(Package.decode(event.data), cb)
       // new package arrived, update the heartbeat timeout
