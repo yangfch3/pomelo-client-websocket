@@ -19,9 +19,12 @@ npm i pomelo-client-websocket --save
 ```
 ```javascript
 const Pomelo = require('pomelo-client-websocket');
-const pomelo = new Pomelo();
 
-pomelo.init({
+// 建议每个连接使用不同的实例，避免单实例先后多次连接
+const gatePomelo = new Pomelo();
+const connectorPomelo = new Pomelo();
+
+gatePomelo.init({
     host: '192.168.1.20',
     port: 3010,
     scheme: 'ws',
@@ -33,16 +36,16 @@ pomelo.init({
     // reconnectDelay: 3000,
     // maxReconnectAttempts: 3
 }, () => {
-    pomelo.request('gate.gateHandler.queryEntry', {
+    gatePomelo.request('gate.gateHandler.queryEntry', {
         uid: 234234232
     }, (data) => {
         console.log(data);
-        pomelo.disconnect();
+        gatePomelo.disconnect();
         if(data.code === 500) {
             console.error('gate 连接失败');
             return;
         }
-        pomelo.init({
+        connectorPomelo.init({
             host: data.hosts,
             port: data.port,
             scheme: 'wss'
@@ -52,12 +55,12 @@ pomelo.init({
     });
 });
 
-pomelo.on('loginRes', (data) => {
+connectorPomelo.on('loginRes', (data) => {
     console.log(data);
 });
 
 // Feature: 对所有服务端推送消息的统一处理
-pomelo.on('__CLIENT_ROUTE', (route, data) => {
+connectorPomelo.on('__CLIENT_ROUTE', (route, data) => {
     console.log(route);
     console.log(data);
 });
@@ -74,4 +77,7 @@ const pomelo = new Pomelo();
 ```
 
 换句话说：`pomelo-client-websocket/core.js` 可以直接在浏览器下运行
+
+### 微信小程序支持
+见 [pomelo-client-wx](https://github.com/yangfch3/pomelo-client-wx)，`pomelo-client-wx` 同时兼容微信小程序和 Web，方便 H5 游戏开发时 Web 和小程序环境的无痛兼容
 
