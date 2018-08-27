@@ -1,6 +1,6 @@
 {
   "name": "pomelo-client-websocket",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "multi-client supported pomelo-client-websocket",
   "main": "index.js",
   "scripts": {

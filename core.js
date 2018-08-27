@@ -1371,10 +1371,6 @@ pomeloClient_require.register('pomelonode-pomelo-jsclient-websocket/lib/pomelo-c
       }
     })()
     var onmessage = function (cb, event) {
-      // M+
-      var txt = this.log && decoder && decoder.decode(event.data).substr(4)
-      this.log && txt && console[txt.indexOf('"code":500') >= 0 ? 'error' : 'log']('%c收到消息', 'color: #DFC149;border: 1px solid #ccc', txt) // 排除心跳包
-
       this.processPackage(Package.decode(event.data), cb)
       // new package arrived, update the heartbeat timeout
       if (this.heartbeatTimeout) {
@@ -1581,6 +1577,7 @@ pomeloClient_require.register('pomelonode-pomelo-jsclient-websocket/lib/pomelo-c
         // server push message
         this.emit('__CLIENT_ROUTE', msg.route, msg.body)
         this.emit(msg.route, msg.body)
+        this.log && console.log('%c收到消息: ' + msg.route, 'color: #DFC149;border: 1px solid #ccc', msg.body)
         return
       }
 
@@ -1593,6 +1590,7 @@ pomeloClient_require.register('pomelonode-pomelo-jsclient-websocket/lib/pomelo-c
       }
 
       this.emit('__CLIENT_RESPONSE', msg.body)
+      this.log && console.log('%c收到消息: ', 'color: #DFC149;border: 1px solid #ccc', msg.body)
       cb(msg.body)
     }
 
