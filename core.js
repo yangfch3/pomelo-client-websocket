@@ -1363,13 +1363,6 @@ pomeloClient_require.register('pomelonode-pomelo-jsclient-websocket/lib/pomelo-c
       var obj = Package.encode(Package.TYPE_HANDSHAKE, Protocol.strencode(JSON.stringify(this.handshakeBuffer)))
       this.send(obj)
     }
-    var decoder = (function () {
-      try {
-        return new TextDecoder('utf-8') // eslint-disable-line
-      } catch (e) {
-        return null
-      }
-    })()
     var onmessage = function (cb, event) {
       this.processPackage(Package.decode(event.data), cb)
       // new package arrived, update the heartbeat timeout
@@ -1380,6 +1373,18 @@ pomeloClient_require.register('pomelonode-pomelo-jsclient-websocket/lib/pomelo-c
     var onerror = function (event) {
       this.emit('io-error', event)
       this.log && console.error('socket error: ', event)
+      if (this.reconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
+        this.connecting = true
+        this.reconnectAttempts++
+        this.log && console.info('socket reconnect: ', this.reconnectAttempts)
+        var self = this
+        this.reconnectTimer = setTimeout(function () {
+          self.initWebSocket(self.reconnectUrl, self.initCallback.bind(self))
+        }, this.reconnectionDelay)
+        this.reconnectionDelay *= 2
+      } else {
+        this.log && console.info('未开启重连或重连尝试次数已用尽')
+      }
     }
     var onclose = function (event) {
       this.emit('close', event)
@@ -1394,6 +1399,8 @@ pomeloClient_require.register('pomelonode-pomelo-jsclient-websocket/lib/pomelo-c
           self.initWebSocket(self.reconnectUrl, self.initCallback.bind(self))
         }, this.reconnectionDelay)
         this.reconnectionDelay *= 2
+      } else {
+        this.log && console.info('未开启重连或重连尝试次数已用尽')
       }
     }
     pro.initWebSocket = function (url, cb) {

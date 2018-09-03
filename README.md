@@ -48,7 +48,11 @@ gatePomelo.init({
         connectorPomelo.init({
             host: data.hosts,
             port: data.port,
-            scheme: 'wss'
+            scheme: 'wss',
+            
+            reconnect: true,
+            maxReconnectAttempts: 5, // 最大重连尝试次数
+            reconnectionDelay: 2000 // 重连的 delay 时间
         }, () => {
             // ...
         });
