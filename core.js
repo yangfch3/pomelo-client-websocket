@@ -1705,5 +1705,16 @@ pomeloClient_require.alias('pomelonode-pomelo-jsclient-websocket/lib/pomelo-clie
 pomeloClient_require.alias('pomelonode-pomelo-jsclient-websocket/lib/pomelo-client.js', 'boot/deps/pomelo-jsclient-websocket/index.js')
 pomeloClient_require.alias('pomelonode-pomelo-jsclient-websocket/lib/pomelo-client.js', 'pomelonode-pomelo-jsclient-websocket/index.js')
 
-pomeloClient_require('boot')
-window.Pomelo = localRoot.Pomelo
+pomeloClient_require('boot');
+
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define(['Pomelo'], factory())
+  } else if (typeof exports === 'object') {
+    module.exports = factory()
+  } else {
+    root.Pomelo = factory()
+  }
+}(this, function () {
+  return localRoot.Pomelo
+}))
