@@ -1490,7 +1490,7 @@ pomeloClient_require.register('pomelonode-pomelo-jsclient-websocket/lib/pomelo-c
       if (this.socket && this.socket.readyState === WebSocket.OPEN) { // eslint-disable-line
         this.socket.send(packet.buffer)
       } else {
-        this.log && console.warn('socket is not open: readyState ' + this.socket.readyState)
+        this.log && console.warn('socket is not open: readyState ' + (this.socket ? this.socket.readyState : -1))
       }
     }
 
